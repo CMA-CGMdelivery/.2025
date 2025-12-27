@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CMA CGM | Official Tracking & Customs Portal</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700;800&family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root { --cma-blue: #002c5f; --cma-red: #e21e26; --cma-light: #f1f4f8; --link-blue: #007bff; --success-green: #27ae60; --warning-orange: #f39c12; }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+        body { background: var(--cma-light); color: #1a1a1a; scroll-behavior: smooth; }
+        
+        /* NAVIGATION */
+        nav { display: flex; justify-content: space-between; align-items: center; padding: 18px 8%; background: white; position: sticky; top: 0; z-index: 1000; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+        .logo { font-family: 'Montserrat'; font-weight: 800; font-size: 26px; color: var(--cma-blue); text-decoration: none; cursor: pointer; }
+        .logo span { color: var(--cma-red); }
+        .nav-links a { text-decoration: none; color: #333; margin-left: 25px; font-weight: 700; font-size: 13px; cursor: pointer; text-transform: uppercase; }
+
+        /* HERO & TRACKING */
+        .hero { background: linear-gradient(rgba(0,44,95,0.85), rgba(0,44,95,0.8)), url('https://images.unsplash.com/photo-1494412519320-aa613dfb7738?q=80&w=1600'); background-size: cover; background-position: center; height: 350px; display: flex; flex-direction: column; align-items: center; justify-content: center; color: white; border-radius: 0 0 40px 40px; }
+        .track-card { background: white; padding: 40px; border-radius: 15px; box-shadow: 0 30px 60px rgba(0,0,0,0.2); width: 90%; max-width: 700px; margin-top: -60px; text-align: center; }
+        .track-input { width: 70%; padding: 18px; border: 2px solid #ddd; border-radius: 8px; font-size: 16px; text-align: center; margin-bottom: 15px; }
+        .track-btn { background: var(--cma-red); color: white; border: none; padding: 18px 35px; border-radius: 8px; font-weight: 800; cursor: pointer; transition: 0.3s; }
+        .track-btn:hover { background: #b3161c; }
+
+        /* RECEIPT STYLING */
+        .receipt-container { background: white; border-radius: 15px; box-shadow: 0 15px 50px rgba(0,0,0,0.1); border-top: 10px solid var(--cma-blue); padding: 50px; margin-top: 30px; position: relative; border: 1px solid #ddd; }
+        .watermark { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(-30deg); font-size: 80px; color: rgba(0,0,0,0.03); font-weight: 900; pointer-events: none; width: 100%; text-align: center; }
+        .receipt-header { border-bottom: 3px solid var(--cma-blue); padding-bottom: 20px; margin-bottom: 30px; display: flex; justify-content: space-between; align-items: flex-end; }
+        
+        .payment-banner { background: #fffcf0; border: 2px dashed var(--warning-orange); padding: 25px; border-radius: 10px; margin: 25px 0; display: flex; justify-content: space-between; align-items: center; }
+        .cargo-img { width: 140px; height: 140px; border-radius: 10px; object-fit: cover; border: 3px solid #eee; }
+
+        /* GENERAL LAYOUT */
+        .page-view { display: none; padding: 50px 8%; animation: fadeIn 0.4s ease-in-out; }
+        .active-view { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
+        
+        #map-box { width: 100%; height: 500px; border-radius: 20px; border: 8px solid white; box-shadow: 0 10px 30px rgba(0,0,0,0.1); margin-top: 30px; overflow: hidden; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 30px; margin-top: 40px; }
+        .card { background: white; padding: 30px; border-radius: 15px; box-shadow: 0 5px 20px rgba(0,0,0,0.05); }
+
+        /* CHATBOT */
+        .chat-widget { position: fixed; bottom: 30px; right: 30px; z-index: 2000; }
+        .chat-button { background: var(--cma-blue); color: white; width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 10px 25px rgba(0,0,0,0.2); font-weight: 800; border: 2px solid white; }
+        .chat-window { position: absolute; bottom: 80px; right: 0; width: 320px; background: white; border-radius: 15px; box-shadow: 0 15px 40px rgba(0,0,0,0.2); display: none; overflow: hidden; border: 1px solid #ddd; }
+        .chat-header { background: var(--cma-blue); color: white; padding: 15px; font-weight: 700; font-size: 14px; display: flex; justify-content: space-between; }
+        .chat-body { height: 300px; padding: 15px; overflow-y: auto; font-size: 13px; background: #f9f9f9; }
+        .chat-input-area { padding: 10px; border-top: 1px solid #eee; display: flex; }
+        .chat-input-area input { flex: 1; padding: 10px; border: 1px solid #ddd; border-radius: 5px; outline: none; }
+        
+        footer { background: var(--cma-blue); color: white; padding: 60px 8%; text-align: center; margin-top: 80px; }
+    </style>
+</head>
+<body>
+
+    <nav>
+        <div onclick="switchPage('home')" class="logo">CMA <span>CGM</span></div>
+        <div class="nav-links">
+            <a onclick="switchPage('about')">About Us</a>
+            <a onclick="switchPage('logistics')">Logistics</a>
+            <a onclick="switchPage('support')">Support</a>
+        </div>
+    </nav>
+
+    <div id="home" class="page-view active-view" style="padding: 0;">
+        <div class="hero">
+            <h1 style="font-family: Montserrat; font-size: 42px;">Global Freight Logistics</h1>
+            <p style="margin-top: 10px; opacity: 0.8;">Tracking & Documentation Management System</p>
+        </div>
+        <center>
+            <div class="track-card">
+                <p style="font-weight: 700; color: var(--cma-blue); margin-bottom: 15px;">ENTER CONSIGNMENT NUMBER</p>
+                <input type="password" id="tInput" class="track-input" placeholder="••••••••••••">
+                <br>
+                <button class="track-btn" onclick="startTrack()">SEARCH CONSIGNMENT</button>
+            </div>
+        </center>
+    </div>
+
+    <div id="tracking-result" class="page-view">
+        <h2 style="font-family: Montserrat; color: var(--cma-blue);">Status for ID: <span style="color: var(--cma-red);">CMA-2712-COL-998</span></h2>
+        
+        <div class="receipt-container">
+            <div class="watermark">CMA CGM OFFICIAL</div>
+            <div class="receipt-header">
+                <div>
+                    <h1 style="font-size: 28px; color: var(--cma-blue); font-family: Montserrat;">SHIPMENT RECEIPT</h1>
+                    <p style="font-weight: 700; color: #666;">Date: December 27, 2025</p>
+                </div>
+                <div style="text-align: right;">
+                    <p style="font-size: 11px; color: #999;">REFERENCE NO.</p>
+                    <p style="font-weight: 800; font-size: 18px;">#UK-COL-271225-ANGEL</p>
+                </div>
+            </div>
+
+            <div style="display: flex; gap: 30px; flex-wrap: wrap;">
+                <img src="https://images.unsplash.com/photo-1566576721346-d4a3b4eaad5b?q=80&w=250" class="cargo-img">
+                <div style="flex: 1; display: grid; grid-template-columns: 1fr 1fr; gap: 20px; font-size: 14px;">
+                    <div><p style="color: #888; font-weight: 700;">SENDER</p><strong>International Logistics Hub</strong></div>
+                    <div><p style="color: #888; font-weight: 700;">RECEIVER</p><strong>Sandra Milena Angel Cordoba</strong></div>
+                    <div><p style="color: #888; font-weight: 700;">DESTINATION ADDRESS</p><strong>116th Street South #50B89 El Porvenir, Caldas, Antioquia</strong></div>
+                    <div><p style="color: #888; font-weight: 700;">EMAIL</p><strong>milenaangel407@gmail.com</strong></div>
+                    <div><p style="color: #888; font-weight: 700;">WEIGHT</p><strong>12.50 KG</strong></div>
+                    <div><p style="color: #888; font-weight: 700;">SERVICE</p><strong>Priority Air Express</strong></div>
+                </div>
+            </div>
+
+            <div class="payment-banner">
+                <div>
+                    <h3 style="color: #856404; font-family: Montserrat;">CUSTOMS CLEARANCE FEE</h3>
+                    <p style="font-size: 13px; color: #856404;">Import Duty Assessment - DIAN Medellin Hub</p>
+                </div>
+                <div style="text-align: right;">
+                    <p style="font-size: 24px; font-weight: 800; color: var(--cma-red);">$1.000.000 COP</p>
+                    <span style="background: var(--cma-red); color: white; padding: 4px 10px; border-radius: 5px; font-size: 11px; font-weight: 800;">PENDING PAYMENT</span>
+                </div>
+            </div>
+
+            <div id="map-box">
+                <iframe width="100%" height="100%" frameborder="0" style="border:0" 
+                src="https://www.google.com/maps/embed?pb=!1m28!1m12!1m3!1d1017551.4882035312!2d-75.14811915!3d5.0003051!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!4m13!3e6!4m5!1s0x8e3f9bfd2da6cb29%3A0x239d63552075670!2sEl%20Dorado%20International%20Airport%20(BOG)!3m2!1d4.70159!2d-74.1469!4m5!1s0x8e469956449171f1%3A0xf67332219d3f8205!2sCaldas%2C%20Antioquia!3m2!1d6.09106!2d-75.63569!5e0!3m2!1sen!2sco!4v1700000000000" allowfullscreen></iframe>
+            </div>
+        </div>
+    </div>
+
+    <div id="about" class="page-view">
+        <h1 style="color: var(--cma-blue); font-family: Montserrat;">Our Global Legacy</h1>
+        <p style="margin-top: 20px; line-height: 1.8;">CMA CGM is a world leader in shipping and logistics. With a presence in 160 countries through 755 offices and 750 warehouses, we employ 155,000 people worldwide.</p>
+        <div class="grid">
+            <div class="card"><img src="https://images.unsplash.com/photo-1512413316925-fd4b93f31521?q=80&w=400" style="width:100%; border-radius:10px;"><h3>Maritime Power</h3></div>
+            <div class="card"><img src="https://images.unsplash.com/photo-1578575437130-527eed3abbec?q=80&w=400" style="width:100%; border-radius:10px;"><h3>Air Solutions</h3></div>
+        </div>
+    </div>
+
+    <div id="logistics" class="page-view">
+        <h1 style="color: var(--cma-blue); font-family: Montserrat;">Logistics Management</h1>
+        <div class="card" style="display: flex; align-items: center; gap: 30px; margin-top: 30px;">
+            <img src="https://images.unsplash.com/photo-1560250097-0b93528c311a?q=80&w=200" style="width: 120px; height: 120px; border-radius: 50%; object-fit: cover;">
+            <div>
+                <h2 style="color: var(--cma-red);">David Richardson</h2>
+                <p><b>Senior Director of International Operations</b></p>
+                <p style="margin-top: 8px; color: #666;">Handling all UK to South America cargo movements.</p>
+            </div>
+        </div>
+    </div>
+
+    <div id="support" class="page-view">
+        <h1 style="color: var(--cma-blue); font-family: Montserrat;">Customer Support</h1>
+        <div class="card" style="margin-top: 30px;">
+            <p><strong>Email:</strong> officialcmashipping@gmail.com</p>
+            <br>
+            <input type="text" placeholder="Full Name" style="width:100%; padding:15px; margin-bottom:10px; border:1px solid #ddd; border-radius:5px;">
+            <textarea placeholder="How can we help?" style="width:100%; padding:15px; height:100px; border:1px solid #ddd; border-radius:5px;"></textarea>
+            <button class="track-btn" style="width:100%; margin-top:10px;">SEND TICKET</button>
+        </div>
+    </div>
+
+    <div class="chat-widget">
+        <div class="chat-window" id="chatWin">
+            <div class="chat-header"><span>CMA Support Bot</span><span onclick="toggleChat()" style="cursor:pointer">×</span></div>
+            <div class="chat-body" id="chatBody">
+                <p style="background:#eee; padding:8px; border-radius:8px; margin-bottom:10px;">Hello Sandra! I see your shipment CMA-2712-COL is pending customs payment. How can I assist you?</p>
+            </div>
+            <div class="chat-input-area">
+                <input type="text" id="chatIn" placeholder="Type a message...">
+                <button onclick="sendChat()" style="padding:0 10px; border:none; background:none; cursor:pointer">➔</button>
+            </div>
+        </div>
+        <div class="chat-button" onclick="toggleChat()">AI</div>
+    </div>
+
+    <footer><p>© 2025 CMA CGM GROUP. All Rights Reserved. Marseille, France.</p></footer>
+
+    <script>
+        function switchPage(id) {
+            document.querySelectorAll('.page-view').forEach(v => v.classList.remove('active-view'));
+            document.getElementById(id).classList.add('active-view');
+            window.scrollTo(0,0);
+        }
+
+        function startTrack() {
+            switchPage('tracking-result');
+        }
+
+        function toggleChat() {
+            const win = document.getElementById('chatWin');
+            win.style.display = win.style.display === 'block' ? 'none' : 'block';
+        }
+
+        function sendChat() {
+            const input = document.getElementById('chatIn');
+            if(!input.value) return;
+            const body = document.getElementById('chatBody');
+            body.innerHTML += `<p style="text-align:right; color:var(--cma-blue); font-weight:700; margin-bottom:10px;">${input.value}</p>`;
+            setTimeout(() => {
+                body.innerHTML += `<p style="background:#eee; padding:8px; border-radius:8px; margin-bottom:10px;">Our agent is reviewing your inquiry regarding the $1,000,000 COP fee.</p>`;
+                body.scrollTop = body.scrollHeight;
+            }, 1000);
+            input.value = '';
+        }
+    </script>
+</body>
+</html>
